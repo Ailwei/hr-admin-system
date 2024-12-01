@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./db.sqlite"
+}
+
+model Employee {
+  id                  Int                  @id @default(autoincrement())
+  firstName           String
+  lastName            String
+  telephone           String
+  email               String               @unique
+  managerId           Int?
+  status              String
+  userId              Int                  @unique
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  Department          Department[]         @relation("DepartmentManager")
+  departmentEmployees DepartmentEmployee[]
+  user                User                 @relation(fields: [userId], references: [id])
+  manager             Employee?            @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  subordinates        Employee[]           @relation("ManagerSubordinates")
+}
+
+model Department {
+  id                  Int                  @id @default(autoincrement())
+  name                String               @unique
+  status              String
+  managerId           Int?
+  manager             Employee?            @relation("DepartmentManager", fields: [managerId], references: [id])
+  departmentEmployees DepartmentEmployee[]
+}
+
+model DepartmentEmployee {
+  employeeId   Int
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
+  employee     Employee   @relation(fields: [employeeId], references: [id])
+
+  @@id([employeeId, departmentId])
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  role      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  employee  Employee?
+}
